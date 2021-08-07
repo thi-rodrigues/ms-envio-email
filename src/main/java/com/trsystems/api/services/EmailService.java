@@ -3,6 +3,7 @@ package com.trsystems.api.services;
 import java.time.LocalDateTime;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,7 @@ public class EmailService {
 	@Autowired
 	private JavaMailSender javaMailSender;
 
+	@SuppressWarnings("finally")
 	public Email sendEmail(Email email) {
 		email.setSendDateEmail(LocalDateTime.now());
 		try {
@@ -28,16 +30,14 @@ public class EmailService {
 			message.setTo(email.getEmailTo());
 			message.setSubject(email.getSubject());
 			message.setText(email.getText());
-
 			javaMailSender.send(message);
+
 			email.setStatusEmail(StatusEmail.SENT);
-		} catch (Exception e) {
+		} catch (MailException e) {
 			email.setStatusEmail(StatusEmail.ERROR);
-			e.printStackTrace();
 		} finally {
-			emailRepository.save(email);
+			return emailRepository.save(email);
 		}
-		return email;
 	}
 
 }
